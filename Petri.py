@@ -8,12 +8,13 @@ import pygame as pg
 
 white = (255, 255, 255)
 red = (255, 0, 0)
-green = (0, 255, 0)
+green = (0, 255, 127)
 blue = (0, 0, 255)
 black = (0, 0, 0)
-yellow = (255, 255, 0)
-orange = (184, 134, 11)
-dark_green = (0, 47, 31)
+yellow = (222, 184, 135)
+dark_yellow = (210, 180, 140)
+orange = (218, 165, 32)
+dark_green = (46, 139, 87)
 pg.font.init()
 
 
@@ -36,25 +37,28 @@ class Petri:
         self.trWidth = trWidth
 
     def draw_point(self, pos: Pos, idPt: int, color):
-        pg.draw.circle(self.sc, black, (pos.x, pos.y), self.ptRadius + 1)
+        pg.draw.circle(self.sc, (200, 200, 200), (pos.x+5, pos.y+5), self.ptRadius)
+        pg.draw.circle(self.sc, dark_yellow, (pos.x, pos.y), self.ptRadius+1)
         pg.draw.circle(self.sc, color, (pos.x, pos.y), self.ptRadius)
 
-        font = pg.font.Font(None, self.ptRadius)
+        font = pg.font.Font("CaviarDreams.ttf", int(self.ptRadius/1.2))
         text = font.render(f"P{idPt}", True, black)
-        self.sc.blit(text, (pos.x - (self.ptRadius/2), pos.y - self.ptRadius-20))
+        self.sc.blit(text, (pos.x - (self.ptRadius/2), pos.y - self.ptRadius - text.get_size()[0] - 5))
 
-        text = font.render("oo" if self.points[idPt].markers == -1 else f"{self.points[idPt].markers}", True, black)
-        self.sc.blit(text, (self.points[idPt].pos.x-self.ptRadius/3, self.points[idPt].pos.y-self.ptRadius/2))
+        text = font.render("oo" if self.points[idPt].markers == -1 else f"{self.points[idPt].markers}", True, white)
+        self.sc.blit(text, (self.points[idPt].pos.x-text.get_size()[0]/2, self.points[idPt].pos.y-text.get_size()[1]/2))
 
     def draw_transition(self, pos, idTr: int, color):
-        pg.draw.rect(self.sc, black,
+        pg.draw.rect(self.sc, (200, 200, 200),
+                     (pos.x - self.trWidth / 2 + 1, pos.y - self.trLength / 2 + 1, self.trWidth + 5, self.trLength + 5))
+        pg.draw.rect(self.sc, (0, 100, 0),
                      (pos.x - self.trWidth / 2 - 1, pos.y - self.trLength / 2 - 1, self.trWidth + 2, self.trLength + 2))
         pg.draw.rect(self.sc, color,
                      (pos.x - (self.trWidth / 2), pos.y - (self.trLength / 2), self.trWidth, self.trLength))
 
-        font = pg.font.Font(None, self.ptRadius)
+        font = pg.font.Font("CaviarDreams.ttf", int(self.ptRadius/1.2))
         text = font.render(f"T{idTr}", True, black)
-        self.sc.blit(text, (pos.x - (self.trWidth/2), pos.y - self.trLength + 10))
+        self.sc.blit(text, (pos.x - text.get_size()[0]/2, pos.y - self.trLength/2 - text.get_size()[1]))
 
     def draw_link_tr_pt(self, trId: int, ptId: int, color):
         tr = self.transitions[trId]
