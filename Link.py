@@ -16,18 +16,19 @@ class Link:
         self.end_elem_id = end_elem_id
 
     def clicked(self, pos: Pos) -> bool:
+        dx = 30
         if self.pos_start.x > self.pos_end.x:
             if self.pos_start.y > self.pos_end.y:
-                if self.pos_end.x <= pos.x <= self.pos_start.x and self.pos_end.y <= pos.y <= self.pos_start.y:
+                if self.pos_end.x + dx <= pos.x <= self.pos_start.x - dx and self.pos_end.y <= pos.y <= self.pos_start.y:
                     return True
             else:
-                if self.pos_end.x <= pos.x <= self.pos_start.x and self.pos_end.y >= pos.y >= self.pos_start.y:
+                if self.pos_end.x + dx <= pos.x <= self.pos_start.x - dx and self.pos_end.y >= pos.y >= self.pos_start.y:
                     return True
         else:
             if self.pos_start.y > self.pos_end.y:
-                if self.pos_end.x >= pos.x >= self.pos_start.x and self.pos_end.y <= pos.y <= self.pos_start.y:
+                if self.pos_end.x - dx >= pos.x >= self.pos_start.x + dx and self.pos_end.y <= pos.y <= self.pos_start.y:
                     return True
             else:
-                if self.pos_end.x >= pos.x >= self.pos_start.x and self.pos_end.y >= pos.y >= self.pos_start.y:
+                if self.pos_end.x - dx >= pos.x >= self.pos_start.x + dx and self.pos_end.y >= pos.y >= self.pos_start.y:
                     return True
         return False

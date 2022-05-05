@@ -4,6 +4,7 @@ import Point
 import Transition
 import Pos
 import Link
+from Widgets import Table
 import pygame as pg
 
 white = (255, 255, 255)
@@ -37,16 +38,17 @@ class Petri:
         self.trWidth = trWidth
 
     def draw_point(self, pos: Pos, idPt: int, color):
-        pg.draw.circle(self.sc, (200, 200, 200), (pos.x+5, pos.y+5), self.ptRadius)
-        pg.draw.circle(self.sc, dark_yellow, (pos.x, pos.y), self.ptRadius+1)
+        pg.draw.circle(self.sc, (200, 200, 200), (pos.x + 5, pos.y + 5), self.ptRadius)
+        pg.draw.circle(self.sc, dark_yellow, (pos.x, pos.y), self.ptRadius + 1)
         pg.draw.circle(self.sc, color, (pos.x, pos.y), self.ptRadius)
 
-        font = pg.font.Font("CaviarDreams.ttf", int(self.ptRadius/1.2))
+        font = pg.font.Font("CaviarDreams.ttf", int(self.ptRadius / 1.2))
         text = font.render(f"P{idPt}", True, black)
-        self.sc.blit(text, (pos.x - (self.ptRadius/2), pos.y - self.ptRadius - text.get_size()[0] - 5))
+        self.sc.blit(text, (pos.x - (self.ptRadius / 2), pos.y - self.ptRadius - text.get_size()[0] - 5))
 
         text = font.render("oo" if self.points[idPt].markers == -1 else f"{self.points[idPt].markers}", True, white)
-        self.sc.blit(text, (self.points[idPt].pos.x-text.get_size()[0]/2, self.points[idPt].pos.y-text.get_size()[1]/2))
+        self.sc.blit(text, (
+        self.points[idPt].pos.x - text.get_size()[0] / 2, self.points[idPt].pos.y - text.get_size()[1] / 2))
 
     def draw_transition(self, pos, idTr: int, color):
         pg.draw.rect(self.sc, (200, 200, 200),
@@ -56,65 +58,79 @@ class Petri:
         pg.draw.rect(self.sc, color,
                      (pos.x - (self.trWidth / 2), pos.y - (self.trLength / 2), self.trWidth, self.trLength))
 
-        font = pg.font.Font("CaviarDreams.ttf", int(self.ptRadius/1.2))
+        font = pg.font.Font("CaviarDreams.ttf", int(self.ptRadius / 1.2))
         text = font.render(f"T{idTr}", True, black)
-        self.sc.blit(text, (pos.x - text.get_size()[0]/2, pos.y - self.trLength/2 - text.get_size()[1]))
+        self.sc.blit(text, (pos.x - text.get_size()[0] / 2, pos.y - self.trLength / 2 - text.get_size()[1]))
 
     def draw_link_tr_pt(self, trId: int, ptId: int, color):
         tr = self.transitions[trId]
         pt = self.points[ptId]
-
+        width_line = 1
         if pt.pos.x > tr.pos.x:
             pg.draw.line(self.sc, color, (tr.pos.x + (self.trWidth / 2), tr.pos.y),
-                         (pt.pos.x - self.ptRadius * 1.2 - 1, pt.pos.y), 2)
-
-            dx = 6 / math.cos(math.radians(45))
-            dy = math.sin(math.radians(45)) * dx
-
-            pg.draw.line(self.sc, color, (pt.pos.x - self.ptRadius - 1, pt.pos.y),
-                         (pt.pos.x - self.ptRadius - 1 - dx, pt.pos.y + dy), 2)
-            pg.draw.line(self.sc, color, (pt.pos.x - self.ptRadius - 1, pt.pos.y),
-                         (pt.pos.x - self.ptRadius - 1 - dx, pt.pos.y - dy), 2)
-
+                         (pt.pos.x - self.ptRadius * 1.2 - 1, pt.pos.y), width_line)
+            rad = math.pi / 180
+            trirad = 5
+            start = (tr.pos.x + (self.trWidth / 2), tr.pos.y)
+            end = (pt.pos.x - self.ptRadius * 1.2, pt.pos.y)
+            rotation = (math.atan2(start[1] - end[1], end[0] - start[0])) + math.pi / 2
+            pg.draw.polygon(self.sc, color, ((end[0] + trirad * math.sin(rotation),
+                                              end[1] + trirad * math.cos(rotation)),
+                                             (end[0] + trirad * math.sin(rotation - 120 * rad),
+                                              end[1] + trirad * math.cos(rotation - 120 * rad)),
+                                             (end[0] + trirad * math.sin(rotation + 120 * rad),
+                                              end[1] + trirad * math.cos(rotation + 120 * rad))))
         elif pt.pos.x < tr.pos.x:
             pg.draw.line(self.sc, color, (tr.pos.x - (self.trWidth / 2), tr.pos.y),
-                         (pt.pos.x + self.ptRadius + 1, pt.pos.y), 2)
+                         (pt.pos.x + self.ptRadius + 1, pt.pos.y), width_line)
 
-            dx = 6 / math.cos(math.radians(45))
-            dy = math.sin(math.radians(45)) * dx
-
-            pg.draw.line(self.sc, color, (pt.pos.x + self.ptRadius + 1, pt.pos.y),
-                         (pt.pos.x + self.ptRadius + 1 + dx, pt.pos.y + dy), 2)
-            pg.draw.line(self.sc, color, (pt.pos.x + self.ptRadius + 1, pt.pos.y),
-                         (pt.pos.x + self.ptRadius + 1 + dx, pt.pos.y - dy), 2)
+            rad = math.pi / 180
+            trirad = 5
+            start = (tr.pos.x - (self.trWidth / 2), tr.pos.y)
+            end = (pt.pos.x + self.ptRadius * 1.2, pt.pos.y)
+            rotation = (math.atan2(start[1] - end[1], end[0] - start[0])) + math.pi / 2
+            pg.draw.polygon(self.sc, color, ((end[0] + trirad * math.sin(rotation),
+                                              end[1] + trirad * math.cos(rotation)),
+                                             (end[0] + trirad * math.sin(rotation - 120 * rad),
+                                              end[1] + trirad * math.cos(rotation - 120 * rad)),
+                                             (end[0] + trirad * math.sin(rotation + 120 * rad),
+                                              end[1] + trirad * math.cos(rotation + 120 * rad))))
 
     def draw_link_pt_tr(self, ptId, trId, color):
         tr = self.transitions[trId]
         pt = self.points[ptId]
-
+        width_line = 1
         if pt.pos.x > tr.pos.x:
+            trirad = 5
             pg.draw.line(self.sc, color, (pt.pos.x - self.ptRadius - 1, pt.pos.y),
-                         (tr.pos.x + (self.trWidth / 2), tr.pos.y), 2)
+                         (tr.pos.x + (self.trWidth / 2) + trirad, tr.pos.y), width_line)
 
-            dx = 6 / math.cos(math.radians(45))
-            dy = math.sin(math.radians(45)) * dx
-
-            pg.draw.line(self.sc, color, (tr.pos.x + (self.trWidth / 2), tr.pos.y),
-                         (tr.pos.x + (self.trWidth / 2) + dx, tr.pos.y + dy), 2)
-            pg.draw.line(self.sc, color, (tr.pos.x + (self.trWidth / 2), tr.pos.y),
-                         (tr.pos.x + (self.trWidth / 2) + dx, tr.pos.y - dy), 2)
+            rad = math.pi / 180
+            start = (pt.pos.x - self.ptRadius - 1, pt.pos.y)
+            end = (tr.pos.x + (self.trWidth / 2) + trirad, tr.pos.y)
+            rotation = (math.atan2(start[1] - end[1], end[0] - start[0])) + math.pi / 2
+            pg.draw.polygon(self.sc, color, ((end[0] + trirad * math.sin(rotation),
+                                              end[1] + trirad * math.cos(rotation)),
+                                             (end[0] + trirad * math.sin(rotation - 120 * rad),
+                                              end[1] + trirad * math.cos(rotation - 120 * rad)),
+                                             (end[0] + trirad * math.sin(rotation + 120 * rad),
+                                              end[1] + trirad * math.cos(rotation + 120 * rad))))
 
         elif pt.pos.x < tr.pos.x:
+            trirad = 5
             pg.draw.line(self.sc, color, (pt.pos.x + self.ptRadius + 1, pt.pos.y),
-                         (tr.pos.x - (self.trWidth / 2), tr.pos.y), 2)
+                         (tr.pos.x - (self.trWidth / 2) - trirad, tr.pos.y), width_line)
 
-            dx = 6 / math.cos(math.radians(45))
-            dy = math.sin(math.radians(45)) * dx
-
-            pg.draw.line(self.sc, color, (tr.pos.x - (self.trWidth / 2), tr.pos.y),
-                         (tr.pos.x - (self.trWidth / 2) - dx, tr.pos.y + dy), 2)
-            pg.draw.line(self.sc, color, (tr.pos.x - (self.trWidth / 2), tr.pos.y),
-                         (tr.pos.x - (self.trWidth / 2) - dx, tr.pos.y - dy), 2)
+            rad = math.pi / 180
+            start = (pt.pos.x + self.ptRadius + 1, pt.pos.y)
+            end = (tr.pos.x - (self.trWidth / 2) - trirad, tr.pos.y)
+            rotation = (math.atan2(start[1] - end[1], end[0] - start[0])) + math.pi / 2
+            pg.draw.polygon(self.sc, color, ((end[0] + trirad * math.sin(rotation),
+                                              end[1] + trirad * math.cos(rotation)),
+                                             (end[0] + trirad * math.sin(rotation - 120 * rad),
+                                              end[1] + trirad * math.cos(rotation - 120 * rad)),
+                                             (end[0] + trirad * math.sin(rotation + 120 * rad),
+                                              end[1] + trirad * math.cos(rotation + 120 * rad))))
 
     def new_point(self, pos: Pos):
         pt = Point.Point(len(self.points), pos)
@@ -232,7 +248,7 @@ class Petri:
         for i in self.links:
             i.id = id
             id += 1
-        for i in range(trId+1, len(self.transitions)):
+        for i in range(trId + 1, len(self.transitions)):
             print(self.transitions[i].id)
             self.transitions[i].id -= 1
             print(self.transitions[i].id)
@@ -257,7 +273,7 @@ class Petri:
         for i in self.links:
             i.id = id
             id += 1
-        for i in range(ptId+1, len(self.points)):
+        for i in range(ptId + 1, len(self.points)):
             print(self.points[i].id)
             self.points[i].id -= 1
             print(self.points[i].id)
@@ -275,8 +291,23 @@ class Petri:
             pt = self.points[ln.end_elem_id[0]]
             tr.points_out.remove(pt)
             pt.trans_in.remove(tr)
-        for i in range(lnId+1, len(self.links)):
+        for i in range(lnId + 1, len(self.links)):
             print(self.links[i].id)
             self.links[i].id -= 1
             print(self.links[i].id)
         self.links.remove(ln)
+
+    def matr_incident(self, pos: Pos):
+        headers = [f"P{i.id}" for i in self.points]
+        index = [f"T{i.id}" for i in self.transitions]
+        matr = []
+        for i in self.transitions:
+            row = []
+            for j in self.points:
+                go_in = 1 if j in i.points_out else 0
+                go_out = 1 if j in i.points_in else 0
+                row.append(0 + go_in - go_out)
+            matr.append(row)
+
+        table = Table(self.sc, matr, headers, index)
+        table.draw(pos)
