@@ -2,6 +2,10 @@ import Transition
 import Pos
 
 
+def key(a):
+    return a.id
+
+
 class Point:
     id: int
     pos: Pos
@@ -22,12 +26,14 @@ class Point:
                 self.trans_in.append(tr)
                 return True
             else:
+                self.trans_in.append(tr)
                 return False
         else:
             if tr not in self.trans_out:
                 self.trans_out.append(tr)
                 return True
             else:
+                self.trans_out.append(tr)
                 return False
 
 

@@ -28,6 +28,7 @@ menu.add_button("Добавить Transition", button_color, button_color_hover,
 menu.add_button("Добавить Link", button_color, button_color_hover, button_color_pressed, sp.func_add_link)
 menu.add_button("Добавить Marker", button_color, button_color_hover, button_color_pressed, sp.func_add_mark)
 menu.add_button("Матрица инцидентности", button_color, button_color_hover, button_color_pressed, lambda: petr.matr_incident(Pos.Pos(500, 100)))
+menu.add_button("Записать PTIO", button_color, button_color_hover, button_color_pressed, petr.PTIO)
 # Обновляем окно
 pg.display.update()
 # Вспомогательные инструменты
@@ -58,14 +59,15 @@ while True:
                 # Очищаем рабочую область
                 pg.draw.rect(sc, (255, 255, 255), rect)
                 # Отрисовываем элементы обратно
-                for j in petr.transitions:
+                for j in petr.transitions.values():
                     petr.inactivate_tr(j.id, j.pos)
-                for j in petr.points:
+                for j in petr.points.values():
                     petr.inactivate_pt(j.id, j.pos)
                 petr.redraw_links()
                 # Обновляем рабочую область
                 pg.display.update(rect)
                 # Активный элемент обнуляем
+                link = []
                 active_elem = None
     # Получаем позицию мыши в пространстве
     mouse_pos = pg.mouse.get_pos()
@@ -78,7 +80,7 @@ while True:
             # Флаг, который обозначает, что элемент был активирован, а не добавлен
             activate = False
             # Пройдём по всем поинтам
-            for i in petr.points:
+            for i in petr.points.values():
                 # Если мы кликнули на какой-то из них
                 if i.pos.x - petr.ptRadius < pos.x < i.pos.x + petr.ptRadius and i.pos.y - petr.ptRadius < pos.y < i.pos.y + petr.ptRadius:
                     # Проверяем есть ли уже активный элемент
@@ -99,7 +101,7 @@ while True:
                     petr.activate_pt(active_elem[0], i.pos)
                     pg.display.update(rect)
             # То же самое, что в верхнем, только объект другой и функции соответственно для этого объекта
-            for i in petr.transitions:
+            for i in petr.transitions.values():
                 if i.pos.x - petr.trWidth/2 < pos.x < i.pos.x + petr.trWidth/2 and i.pos.y - petr.trLength/2 < pos.y < i.pos.y + petr.trLength/2:
                     if type(active_elem) == tuple:
                         if active_elem[1] == "Point":
@@ -113,7 +115,7 @@ while True:
                     petr.activate_tr(active_elem[0], i.pos)
                     pg.display.update(rect)
             # То же самое, что в верхнем, только объект другой и функции соответственно для этого объекта
-            for i in petr.links:
+            for i in petr.links.values():
                 if i.clicked(pos):
                     if type(active_elem) == tuple:
                         if active_elem[1] == "Point":
@@ -178,10 +180,10 @@ while True:
                         # Очищаем экран
                         pg.draw.rect(sc, (255, 255, 255), rect)
                         # Заново отрисовываем элементы
-                        for i in petr.points:
+                        for i in petr.points.values():
                             if i.id != active_elem[0]:
                                 petr.inactivate_pt(i.id, i.pos)
-                        for i in petr.transitions:
+                        for i in petr.transitions.values():
                             petr.inactivate_tr(i.id, i.pos)
                         # Перерисовываем элемент в новую позицию (К мышке)
                         petr.activate_pt(active_elem[0], newPos)
@@ -193,10 +195,10 @@ while True:
                     if pt.pos.x - petr.trWidth/2 < pos.x < pt.pos.x + petr.trWidth/2 and pt.pos.y - petr.trLength/2 < pos.y < pt.pos.y + petr.trLength/2:
                         newPos = Pos.Pos(pg.mouse.get_pos()[0], pg.mouse.get_pos()[1])
                         pg.draw.rect(sc, (255, 255, 255), rect)
-                        for i in petr.transitions:
+                        for i in petr.transitions.values():
                             if i.id != active_elem[0]:
                                 petr.inactivate_tr(i.id, i.pos)
-                        for i in petr.points:
+                        for i in petr.points.values():
                             petr.inactivate_pt(i.id, i.pos)
                         petr.activate_tr(active_elem[0], newPos)
                         petr.redraw_links()

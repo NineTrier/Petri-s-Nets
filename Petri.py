@@ -21,18 +21,18 @@ pg.font.init()
 
 class Petri:
     sc: pg.display
-    points: list
-    transitions: list
-    links: list
+    points: dict
+    transitions: dict
+    links: dict
     ptRadius: int
     trLength: int
     trWidth: int
 
     def __init__(self, sc, ptRadius=10, trLength=20, trWidth=6):
         self.sc = sc
-        self.points = []
-        self.transitions = []
-        self.links = []
+        self.points = {}
+        self.transitions = {}
+        self.links = {}
         self.ptRadius = ptRadius
         self.trLength = trLength
         self.trWidth = trWidth
@@ -48,7 +48,7 @@ class Petri:
 
         text = font.render("oo" if self.points[idPt].markers == -1 else f"{self.points[idPt].markers}", True, white)
         self.sc.blit(text, (
-        self.points[idPt].pos.x - text.get_size()[0] / 2, self.points[idPt].pos.y - text.get_size()[1] / 2))
+            self.points[idPt].pos.x - text.get_size()[0] / 2, self.points[idPt].pos.y - text.get_size()[1] / 2))
 
     def draw_transition(self, pos, idTr: int, color):
         pg.draw.rect(self.sc, (200, 200, 200),
@@ -62,9 +62,12 @@ class Petri:
         text = font.render(f"T{idTr}", True, black)
         self.sc.blit(text, (pos.x - text.get_size()[0] / 2, pos.y - self.trLength / 2 - text.get_size()[1]))
 
-    def draw_link_tr_pt(self, trId: int, ptId: int, color):
+    def draw_link_tr_pt(self, trId: int, ptId: int, lnId: int, color):
         tr = self.transitions[trId]
         pt = self.points[ptId]
+        mark = self.links[lnId].markers
+        font = pg.font.Font("CaviarDreams.ttf", int(self.ptRadius / 1.2))
+        text = font.render(f"{mark}", True, black)
         width_line = 1
         if pt.pos.x > tr.pos.x:
             pg.draw.line(self.sc, color, (tr.pos.x + (self.trWidth / 2), tr.pos.y),
@@ -73,6 +76,8 @@ class Petri:
             trirad = 5
             start = (tr.pos.x + (self.trWidth / 2), tr.pos.y)
             end = (pt.pos.x - self.ptRadius * 1.2, pt.pos.y)
+            pg.draw.rect(self.sc, white, ((start[0] + end[0]) / 2, ((start[1] + end[1]) / 2) + 20, 20, 15))
+            self.sc.blit(text, ((start[0] + end[0]) / 2, ((start[1] + end[1]) / 2) + 20))
             rotation = (math.atan2(start[1] - end[1], end[0] - start[0])) + math.pi / 2
             pg.draw.polygon(self.sc, color, ((end[0] + trirad * math.sin(rotation),
                                               end[1] + trirad * math.cos(rotation)),
@@ -88,6 +93,8 @@ class Petri:
             trirad = 5
             start = (tr.pos.x - (self.trWidth / 2), tr.pos.y)
             end = (pt.pos.x + self.ptRadius * 1.2, pt.pos.y)
+            pg.draw.rect(self.sc, white, ((start[0] + end[0]) / 2, ((start[1] + end[1]) / 2) + 20, 20, 15))
+            self.sc.blit(text, ((start[0] + end[0]) / 2, ((start[1] + end[1]) / 2) + 20))
             rotation = (math.atan2(start[1] - end[1], end[0] - start[0])) + math.pi / 2
             pg.draw.polygon(self.sc, color, ((end[0] + trirad * math.sin(rotation),
                                               end[1] + trirad * math.cos(rotation)),
@@ -96,9 +103,12 @@ class Petri:
                                              (end[0] + trirad * math.sin(rotation + 120 * rad),
                                               end[1] + trirad * math.cos(rotation + 120 * rad))))
 
-    def draw_link_pt_tr(self, ptId, trId, color):
+    def draw_link_pt_tr(self, ptId, trId, lnId, color):
         tr = self.transitions[trId]
         pt = self.points[ptId]
+        mark = self.links[lnId].markers
+        font = pg.font.Font("CaviarDreams.ttf", int(self.ptRadius / 1.2))
+        text = font.render(f"{mark}", True, black)
         width_line = 1
         if pt.pos.x > tr.pos.x:
             trirad = 5
@@ -108,6 +118,8 @@ class Petri:
             rad = math.pi / 180
             start = (pt.pos.x - self.ptRadius - 1, pt.pos.y)
             end = (tr.pos.x + (self.trWidth / 2) + trirad, tr.pos.y)
+            pg.draw.rect(self.sc, white, ((start[0] + end[0]) / 2, ((start[1] + end[1]) / 2) - 20, 20, 15))
+            self.sc.blit(text, ((start[0] + end[0]) / 2, ((start[1] + end[1]) / 2) - 20))
             rotation = (math.atan2(start[1] - end[1], end[0] - start[0])) + math.pi / 2
             pg.draw.polygon(self.sc, color, ((end[0] + trirad * math.sin(rotation),
                                               end[1] + trirad * math.cos(rotation)),
@@ -124,6 +136,8 @@ class Petri:
             rad = math.pi / 180
             start = (pt.pos.x + self.ptRadius + 1, pt.pos.y)
             end = (tr.pos.x - (self.trWidth / 2) - trirad, tr.pos.y)
+            pg.draw.rect(self.sc, white, ((start[0] + end[0]) / 2, ((start[1] + end[1]) / 2) - 20, 20, 15))
+            self.sc.blit(text, ((start[0] + end[0]) / 2, ((start[1] + end[1]) / 2) - 20))
             rotation = (math.atan2(start[1] - end[1], end[0] - start[0])) + math.pi / 2
             pg.draw.polygon(self.sc, color, ((end[0] + trirad * math.sin(rotation),
                                               end[1] + trirad * math.cos(rotation)),
@@ -133,52 +147,66 @@ class Petri:
                                               end[1] + trirad * math.cos(rotation + 120 * rad))))
 
     def new_point(self, pos: Pos):
-        pt = Point.Point(len(self.points), pos)
-        self.points.append(pt)
+        pt = Point.Point(max(self.points.keys()) + 1 if len(self.points) > 0 else 1, pos)
+        self.points[pt.id] = pt
         self.draw_point(pos, pt.id, yellow)
 
     def new_transition(self, pos: Pos):
-        tr = Transition.Transition(len(self.transitions), pos)
-        self.transitions.append(tr)
+        tr = Transition.Transition(max(self.transitions.keys()) + 1 if len(self.transitions) > 0 else 1, pos)
+        self.transitions[tr.id] = tr
         self.draw_transition(pos, tr.id, green)
 
     def new_link_transition_to_point(self, trId: int, ptId: int):
         tr = self.transitions[trId]
         pt = self.points[ptId]
 
-        draw = True
+        add = True
         if tr.addLink(pt, 0):
             self.transitions[trId] = tr
         else:
-            draw = False
+            add = False
         if pt.addLink(tr, 1):
             self.points[ptId] = pt
         else:
-            draw = False
-
-        if draw:
-            ln = Link.Link(len(self.links), tr.pos, pt.pos, (trId, "Transition"), (ptId, "Point"))
-            self.links.append(ln)
-            self.draw_link_tr_pt(trId, ptId, black)
+            add = False
+        print(add)
+        if add:
+            ln = Link.Link(max(self.links.keys())+1 if len(self.links) > 0 else 1, tr.pos, pt.pos, (trId, "Transition"), (ptId, "Point"))
+            self.links[ln.id] = ln
+        else:
+            ln = None
+            for i in self.links.values():
+                if i.start_elem_id[0] == tr.id and i.start_elem_id[1] == "Transition" and i.end_elem_id[0] == pt.id and \
+                        i.end_elem_id[1] == "Point":
+                    i.markers += 1
+                    ln = i
+        self.draw_link_tr_pt(trId, ptId, ln.id, black)
 
     def new_link_point_to_transition(self, ptId: int, trId: int):
         tr = self.transitions[trId]
         pt = self.points[ptId]
-        draw = True
 
+        add = True
         if tr.addLink(pt, 1):
             self.transitions[trId] = tr
         else:
-            draw = False
+            add = False
         if pt.addLink(tr, 0):
             self.points[ptId] = pt
         else:
-            draw = False
-
-        if draw:
-            ln = Link.Link(len(self.links), pt.pos, tr.pos, (ptId, "Point"), (trId, "Transition"))
-            self.links.append(ln)
-            self.draw_link_pt_tr(ptId, trId, black)
+            add = False
+        print(add)
+        if add:
+            ln = Link.Link(max(self.links.keys())+1 if len(self.links) > 0 else 1, pt.pos, tr.pos, (ptId, "Point"), (trId, "Transition"))
+            self.links[ln.id] = ln
+        else:
+            ln = None
+            for i in self.links.values():
+                if i.start_elem_id[0] == pt.id and i.start_elem_id[1] == "Point" and i.end_elem_id[0] == tr.id and \
+                        i.end_elem_id[1] == "Transition":
+                    i.markers += 1
+                    ln = i
+        self.draw_link_pt_tr(ptId, trId, ln.id, black)
 
     def activate_pt(self, ptId: int, newPos: Pos):
         pt = self.points[ptId]
@@ -207,77 +235,61 @@ class Petri:
     def activate_ln(self, lnId: int):
         ln = self.links[lnId]
         if ln.start_elem_id[1] == "Transition":
-            self.draw_link_tr_pt(ln.start_elem_id[0], ln.end_elem_id[0], red)
+            self.draw_link_tr_pt(ln.start_elem_id[0], ln.end_elem_id[0], ln.id, red)
         else:
-            self.draw_link_pt_tr(ln.start_elem_id[0], ln.end_elem_id[0], red)
+            self.draw_link_pt_tr(ln.start_elem_id[0], ln.end_elem_id[0], ln.id, red)
 
     def inactivate_ln(self, lnId: int):
         ln = self.links[lnId]
         if ln.start_elem_id[1] == "Transition":
-            self.draw_link_tr_pt(ln.start_elem_id[0], ln.end_elem_id[0], black)
+            self.draw_link_tr_pt(ln.start_elem_id[0], ln.end_elem_id[0], ln.id, black)
         else:
-            self.draw_link_pt_tr(ln.start_elem_id[0], ln.end_elem_id[0], black)
+            self.draw_link_pt_tr(ln.start_elem_id[0], ln.end_elem_id[0], ln.id, black)
 
     def redraw_links(self):
-        for i in self.links:
+        for i in self.links.values():
             if i.start_elem_id[1] == "Transition":
                 i.pos_start = self.transitions[i.start_elem_id[0]].pos
                 i.pos_end = self.points[i.end_elem_id[0]].pos
-                self.draw_link_tr_pt(i.start_elem_id[0], i.end_elem_id[0], black)
+                self.draw_link_tr_pt(i.start_elem_id[0], i.end_elem_id[0], i.id, black)
             else:
                 i.pos_start = self.points[i.start_elem_id[0]].pos
                 i.pos_end = self.transitions[i.end_elem_id[0]].pos
-                self.draw_link_pt_tr(i.start_elem_id[0], i.end_elem_id[0], black)
+                self.draw_link_pt_tr(i.start_elem_id[0], i.end_elem_id[0], i.id, black)
 
     def delete_transition(self, trId):
         tr = self.transitions[trId]
-        for i in self.points:
+        for i in self.points.values():
             if tr in i.trans_in:
                 i.trans_in.remove(tr)
             if tr in i.trans_out:
                 i.trans_out.remove(tr)
         list_to_del = []
-        for i in self.links:
+        for i in self.links.values():
             if i.start_elem_id[1] == "Transition" and i.start_elem_id[0] == tr.id and i not in list_to_del:
                 list_to_del.append(i)
             if i.end_elem_id[1] == "Transition" and i.end_elem_id[0] == tr.id and i not in list_to_del:
                 list_to_del.append(i)
         for i in list_to_del:
-            self.links.remove(i)
-        id = 0
-        for i in self.links:
-            i.id = id
-            id += 1
-        for i in range(trId + 1, len(self.transitions)):
-            print(self.transitions[i].id)
-            self.transitions[i].id -= 1
-            print(self.transitions[i].id)
-        self.transitions.remove(tr)
+            self.links.pop(i.id)
+        self.transitions.pop(tr.id)
 
     def delete_point(self, ptId):
         pt = self.points[ptId]
-        for i in self.transitions:
+        for i in self.transitions.values():
             if pt in i.points_in:
                 i.points_in.remove(pt)
             if pt in i.points_out:
                 i.points_out.remove(pt)
         list_to_del = []
-        for i in self.links:
+        for i in self.links.values():
             if i.start_elem_id[1] == "Point" and i.start_elem_id[0] == pt.id and i not in list_to_del:
                 list_to_del.append(i)
             if i.end_elem_id[1] == "Point" and i.end_elem_id[0] == pt.id and i not in list_to_del:
                 list_to_del.append(i)
         for i in list_to_del:
-            self.links.remove(i)
-        id = 0
-        for i in self.links:
-            i.id = id
-            id += 1
-        for i in range(ptId + 1, len(self.points)):
-            print(self.points[i].id)
-            self.points[i].id -= 1
-            print(self.points[i].id)
-        self.points.remove(pt)
+            self.links.pop(i.id)
+        self.points.pop(pt.id)
 
     def delete_link(self, lnId):
         ln = self.links[lnId]
@@ -291,19 +303,15 @@ class Petri:
             pt = self.points[ln.end_elem_id[0]]
             tr.points_out.remove(pt)
             pt.trans_in.remove(tr)
-        for i in range(lnId + 1, len(self.links)):
-            print(self.links[i].id)
-            self.links[i].id -= 1
-            print(self.links[i].id)
-        self.links.remove(ln)
+        self.links.pop(ln.id)
 
     def matr_incident(self, pos: Pos):
-        headers = [f"P{i.id}" for i in self.points]
-        index = [f"T{i.id}" for i in self.transitions]
+        headers = [f"P{i.id}" for i in self.points.values()]
+        index = [f"T{i.id}" for i in self.transitions.values()]
         matr = []
-        for i in self.transitions:
+        for i in self.transitions.values():
             row = []
-            for j in self.points:
+            for j in self.points.values():
                 go_in = 1 if j in i.points_out else 0
                 go_out = 1 if j in i.points_in else 0
                 row.append(0 + go_in - go_out)
@@ -311,3 +319,24 @@ class Petri:
 
         table = Table(self.sc, matr, headers, index)
         table.draw(pos)
+
+    def PTIO(self):
+        P = [f"P{i.id}" for i in self.points.values()]
+        T = [f"T{i.id}" for i in self.transitions.values()]
+        I = []
+        O = []
+        for i in self.transitions.values():
+            i.points_in.sort(key=Transition.key)
+            i.points_out.sort(key=Transition.key)
+            row = []
+            for j in i.points_in:
+                row.append(f"p{j.id}")
+            I.append(row)
+            row = []
+            for j in i.points_out:
+                row.append(f"p{j.id}")
+            O.append(row)
+        print(P)
+        print(T)
+        print(I)
+        print(O)

@@ -7,6 +7,7 @@ class Link:
     pos_end: Pos
     start_elem_id: tuple
     end_elem_id: tuple
+    markers: int
 
     def __init__(self, id: int, pos_start: Pos, pos_end: Pos, start_elem_id: tuple, end_elem_id: tuple):
         self.id = id
@@ -14,6 +15,7 @@ class Link:
         self.pos_end = pos_end
         self.start_elem_id = start_elem_id
         self.end_elem_id = end_elem_id
+        self.markers = 1
 
     def clicked(self, pos: Pos) -> bool:
         dx = 30
